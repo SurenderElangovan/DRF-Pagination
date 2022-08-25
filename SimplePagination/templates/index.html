@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Sample Pagination API</title>
+        <style>
+            .btn-cls {
+            background-color: #e1ecf4;
+            border-radius: 3px;
+            border: 1px solid #7aa7c7;
+            box-shadow: rgba(255, 255, 255, .7) 0 1px 0 0 inset;
+            box-sizing: border-box;
+            color: #39739d;
+            cursor: pointer;
+            display: inline-block;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.15385;
+            margin: 0;
+            outline: none;
+            padding: 8px .8em;
+            position: relative;
+            text-align: center;
+            text-decoration: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            vertical-align: baseline;
+            white-space: nowrap;
+            }
+
+            .btn-cls:hover,
+            .btn-cls:focus {
+            background-color: #b3d3ea;
+            color: #2c5777;
+            }
+
+            .btn-cls:focus {
+            box-shadow: 0 0 0 4px rgba(0, 149, 255, .15);
+            }
+
+            .btn-cls:active {
+            background-color: #a0c7e4;
+            box-shadow: none;
+            color: #2c5777;
+            }
+            .post-txt{
+                font-family: Copperplate, Papyrus, fantasy;
+            }
+            .head-txt{
+                font-family: Tahoma, Verdana, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <h2 class="head-txt">Titles</h2>
+        <div id="binder">
+            <div
+                v-for="post in posts"
+                v-bind:key="post.id"
+            >
+                <h3 class="post-txt">[[post.id]]) [[ post.title ]]</h3>
+            </div>
+
+            <template v-if="showPrevButton">
+                <button class="btn-cls" @click="loadPrev()"><< Previous</button>
+            </template>
+
+            <template>
+                Pagination
+            </template>
+
+            <template v-if="showNextButton">
+                <button class="btn-cls" @click="loadNext()">  Next >>  </button>
+            </template>
+        </div>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            const Bind = {
+                data() {
+                    return {
+                        posts: [],
+                        currentPage: 1,
+                        showNextButton: false,
+                        showPrevButton: false
+                    }
+                },
+                delimiters: ['[[', ']]'],
+                mounted() {
+                    this.getPosts()
+                },
+                methods: {
+                    loadNext() {
+                        this.currentPage += 1
+                        this.getPosts()
+                    },
+                    loadPrev() {
+                        this.currentPage -= 1
+                        this.getPosts()
+                    },
+                    getPosts() {
+                        fetch(`api/v1/posts/?page=${this.currentPage}`)
+                            .then(response => {
+                                return response.json()
+                            })
+                            .then(data => {
+                                console.log(data)
+
+                                this.showNextButton = false
+                                this.showPrevButton = false
+                                
+                                if (data.next) {
+                                    this.showNextButton = true
+                                }
+
+                                if (data.previous) {
+                                    this.showPrevButton = true
+                                }
+
+                                this.posts = data.results
+                            })
+                            .catch(error => {
+                                console.log(error)
+                            })
+                    }
+                }
+            }
+
+            Vue.createApp(Bind).mount('#binder')
+        </script>
+    </body>
+</html>
